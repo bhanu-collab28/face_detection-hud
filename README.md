@@ -19,18 +19,18 @@ A real-time face detection web dashboard powered by *YOLOv8, **Intel OpenVINO, *
 ## 🚀 How to Run Locally
 
 1. *Clone the repository:*
-   bash
-   git clone https://github.com
+   
+   git clone https://github.com/bhanu-collab28/face_detection-hud.git
    cd face_detection-hud
    
 
 2. *Install dependencies:*
-   bash
+   
    pip install flask opencv-python ultralytics openvino numpy
    
 
 3. *Run the application:*
-   bash
+   
    python app.py
    
    Your browser will automatically open at http://127.0.0.1:5000.
