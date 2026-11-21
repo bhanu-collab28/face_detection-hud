@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Vision — Face Detection</title>
+    <style>
+        body {
+            background: #0b0f19;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            margin: 0;
+        }
+        h1 { color: #38bdf8; letter-spacing: 1px; margin-bottom: 20px; }
+        .dashboard { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+        .video-card {
+            width: 640px;
+            max-width: 95vw;
+            height: 480px;
+            background: #111827;
+            border: 2px solid #38bdf8;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+        }
+        img { display: none; width: 100%; height: 100%; object-fit: cover; }
+        #offline-msg { color: #64748b; font-size: 20px; font-weight: 600; }
+        .panel {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 24px;
+            width: 240px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .stat-box { background: #1e293b; padding: 14px; border-radius: 10px; }
+        .stat-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
+        .stat-val { font-size: 28px; font-weight: bold; color: #38bdf8; }
+        button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        #power-btn { background: #16a34a; }
+        #power-btn.active { background: #dc2626; }
+        #msg { font-size: 13px; color: #4ade80; min-height: 18px; }
+    </style>
+</head>
+<body>
+    <h1>AI FACE VISION HUD</h1>
+    <div class="dashboard">
+        <div class="video-card">
+            <div id="offline-msg">Camera is Offline — Click Start</div>
+            <img id="video-stream" src="">
+        </div>
+        <div class="panel">
+            <button id="power-btn" onclick="toggleCamera()">Start Camera</button>
+            <div class="stat-box">
+                <div class="stat-label">Faces Detected</div>
+                <div class="stat-val" id="faces">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Live Speed (FPS)</div>
+                <div class="stat-val" id="fps">0</div>
+            </div>
+            <button onclick="toggleBlur()">Toggle Privacy Blur</button>
+            <button onclick="takeSnapshot()">Capture Snapshot</button>
+            <div id="msg"></div>
+        </div>
+    </div>
+
+    <script>
+        setInterval(() => {
+            fetch('/stats').then(r => r.json()).then(data => {
+                document.getElementById('faces').innerText = data.faces;
+                document.getElementById('fps').innerText = data.fps;
+            });
+        }, 500);
+
+        function toggleCamera() {
+            fetch('/toggle_camera', {method: 'POST'}).then(r => r.json()).then(data => {
+                const btn = document.getElementById('power-btn');
+                const img = document.getElementById('video-stream');
+                const offline = document.getElementById('offline-msg');
+                if (data.active) {
+                    btn.innerText = "Stop Camera";
+                    btn.classList.add("active");
+                    offline.style.display = "none";
+                    img.style.display = "block";
+                    img.src = "/video_feed?" + new Date().getTime();
+                    document.getElementById('msg').innerText = "System Started";
+                } else {
+                    btn.innerText = "Start Camera";
+                    btn.classList.remove("active");
+                    img.src = "";
+                    img.style.display = "none";
+                    offline.style.display = "block";
+                    document.getElementById('msg').innerText = "System Stopped";
+                }
+            });
+        }
+
+        function toggleBlur() {
+            fetch('/toggle_blur', {method: 'POST'}).then(r => r.json()).then(data => {
+                document.getElementById('msg').innerText = data.blur ? "Privacy Blur: ON" : "Privacy Blur: OFF";
+            });
+        }
+
+        function takeSnapshot() {
+            fetch('/snapshot', {method: 'POST'}).then(r => r.json()).then(data => {
+                if (data.saved) document.getElementById('msg').innerText = "Saved: " + data.saved;
+            });
+        }
+    </script>
+</body>
+</html>
